@@ -21,6 +21,8 @@ class MainViewModel @Inject constructor(private val pokemonRepository: PokemonRe
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
+    private var offsetQuery: Int = 0
+
     suspend fun updatePokemonLinks(newLinks: List<PokemonLink>) {
         _pokemonLinks.postValue(newLinks)
     }
@@ -29,14 +31,28 @@ class MainViewModel @Inject constructor(private val pokemonRepository: PokemonRe
         _isLoading.postValue(isLoading)
     }
 
+    fun areThereMorePokemon(): Boolean {
+        return offsetQuery < MAX_OFFSET_QUERY
+    }
+
+    fun increaseOffset() {
+        if (areThereMorePokemon()) {
+            offsetQuery += LIMIT_QUERY
+        }
+    }
 
     fun fetchPokemonLinks() {
         setLoading(true)
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                val pokemonPage = pokemonRepository.getPokemonList(0, 20)
+                val pokemonPage = pokemonRepository.getPokemonList(offset = offsetQuery, limit = LIMIT_QUERY)
                 updatePokemonLinks(pokemonPage.results)
             }
         }
+    }
+
+    companion object {
+        private const val LIMIT_QUERY = 20
+        private const val MAX_OFFSET_QUERY = 600
     }
 }

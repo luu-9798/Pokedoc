@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.RecyclerView
 import com.luu9798.pokedoc.databinding.FragmentHomeBinding
 import com.luu9798.pokedoc.view.adapter.PokemonLinkAdapter
 import com.luu9798.pokedoc.viewmodel.MainViewModel
@@ -35,6 +36,15 @@ class HomeFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.recyclerViewPokemonLink.adapter = pokemonLinkAdapter
+        binding.recyclerViewPokemonLink.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                if (!recyclerView.canScrollVertically(1) && viewModel.areThereMorePokemon()) {
+                    viewModel.increaseOffset()
+                    viewModel.fetchPokemonLinks()
+                }
+            }
+        })
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             if (isLoading) {
